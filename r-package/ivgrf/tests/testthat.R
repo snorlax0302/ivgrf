@@ -1,6 +1,6 @@
 library(testthat)
-library(grf)
+library(ivgrf)
 
 # This treats warnings as errors
 options(warn = 2)
-test_check("grf")
+test_check("ivgrf")
