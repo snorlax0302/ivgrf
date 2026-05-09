@@ -1,76 +1,48 @@
-name: Deploy gh-pages
+# Run CI for R using https://eddelbuettel.github.io/r-ci/
+
+name: Test R package
 
 on:
   push:
-    branches: ["master"]
-
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    branches: master
+  pull_request:
+    branches: master
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+  ci:
+    runs-on: macOS-latest
+
+    env:
+      USE_BSPM: true
+      _R_CHECK_FORCE_SUGGESTS_: false
+      _R_CHECK_DONTTEST_EXAMPLES_: true
+
+    defaults:
+      run:
+        working-directory: r-package/ivgrf
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup build
-        working-directory: r-package/grf
+      - uses: actions/checkout@v4
+
+      - name: Setup R
         run: |
-          # Install R
-          curl -OLs https://eddelbuettel.github.io/r-ci/run.sh && chmod 0755 run.sh
+          curl -OLs https://eddelbuettel.github.io/r-ci/run.sh
+          chmod 0755 run.sh
           ./run.sh bootstrap
           ./run.sh install_all
-          ./run.sh install_aptget pandoc
 
-          # Install grf
-          R CMD INSTALL .
-      - name: Setup docs
-        working-directory: r-package/grf
+      - name: Test
         run: |
-          # Install pkgdown v1.5
-          sudo Rscript -e "install.packages(c('fs', 'highlight', 'httr', 'memoise', 'openssl', 'purrr', 'rmarkdown', 'rstudioapi', 'whisker', 'xml2', 'yaml', 'rematch2', 'fansi'))"
-          sudo Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/pkgdown/pkgdown_1.5.1.tar.gz', repos = NULL, type = 'source')"
+          ./run.sh run_tests
 
-          # Install packages used in vignettes
-          sudo Rscript -e "install.packages(c('ggplot2', 'glmnet', 'maq', 'policytree'))"
-      - name: Build docs
-        working-directory: r-package/grf
-        run: |
-          # Build site
-          cp ../../README.md .
-          cp ../../REFERENCE.md .
-          cp ../../DEVELOPING.md .
-          cp ../../releases/CHANGELOG.md .
+          # Treat WARNING and NOTE as error (but omit flaky timestamp NOTE)
+          issues=$(find . -name '*00check.log' -exec cat {} \; | grep 'WARNING\|NOTE' | grep -v 'checking for future file timestamps' | grep -v '^Status: [0-9]\+ NOTE' || true)
+          if [ -n "$issues" ]; then
+            echo "Found warnings/notes, treating as errors:"
+            echo "$issues"
+            exit 1
+          fi
 
-          # Some minor touchups for intro vignette's html output
-          sed -i '3,14d' vignettes/grf_guide.Rmd
-          sed -i 's/^print(ptree)$/plot(ptree)/' vignettes/grf_guide.Rmd
-          perl -0777 -pi -e 's/,\s*num\.threads\s*=\s*[0-9]+//g; s/> \*\*Remark\*\*: We use `num\.threads[^\n]*\n+//g' vignettes/grf_guide.Rmd
-
-          Rscript -e "pkgdown::build_site()"
-      - name: Inject KaTeX into vignettes
-        working-directory: r-package/grf
-        run: |
-          find docs/articles -name "*.html" -type f | while IFS= read -r f; do
-            sed -i '/<head>/a <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>' "$f"
-          done
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'r-package/grf/docs'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Print logs
+        if: failure()
+        run: ./run.sh dump_logs
