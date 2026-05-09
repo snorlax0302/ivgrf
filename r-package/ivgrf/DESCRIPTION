@@ -1,0 +1,32 @@
+Package: ivgrf
+Title: TODO: add title
+Version: 0.0.1
+Authors@R: c(
+    person("Youngjoo", "Cho", role = c("aut", "cre"), email = "yvc5154@konkuk.ac.kr"),
+    person("Yifan", "Cui", role = "aut"),
+    person("Erik", "Sverdrup", role = "aut"),
+    person("Jaeseong", "Park", role = "aut"),
+    person("Eunjeong", "Kim", role = "aut"),
+    person("MinJae", "Lee", role = "aut"),
+    person("Team", "GRF", role = c("cph", "ctb"), comment = "Original Generalized Random Forests team")
+    )
+BugReports: https://github.com/snorlax0302/ivgrf/issues
+Description: TODO: Add description.
+Depends:
+    R (>= 3.5.0)
+License: GPL-3
+LinkingTo: Rcpp, RcppEigen
+Imports:
+    grf,
+    Matrix,
+    methods,
+    Rcpp (>= 0.12.15)
+RoxygenNote: 7.3.3
+Suggests:
+    knitr,
+    rmarkdown
+SystemRequirements: C++17, GNU make
+URL: https://github.com/snorlax0302/ivgrf
+Encoding: UTF-8
+VignetteBuilder: knitr
+LazyData: true
