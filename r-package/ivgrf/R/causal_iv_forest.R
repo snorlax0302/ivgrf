@@ -230,16 +230,17 @@ causal_iv_forest <- function(X, Y, W, Z,
       tune.parameters <- tune.parameters[!grepl("honesty", tune.parameters)]
     }
     tune.parameters.defaults <- default.parameters[tune.parameters]
-    tuning.output <- tune_forest(data = data,
-                                 nrow.X = nrow(X),
-                                 ncol.X = ncol(X),
-                                 args = args,
-                                 tune.parameters = tune.parameters,
-                                 tune.parameters.defaults = tune.parameters.defaults,
-                                 tune.num.trees = tune.num.trees,
-                                 tune.num.reps = tune.num.reps,
-                                 tune.num.draws = tune.num.draws,
-                                 train = instrumental_train)
+    stop("Error: Tuning is currently disabled. Please set tune.parameters = 'none'.")
+    # tuning.output <- tune_forest(data = data,
+    #                              nrow.X = nrow(X),
+    #                              ncol.X = ncol(X),
+    #                              args = args,
+    #                              tune.parameters = tune.parameters,
+    #                              tune.parameters.defaults = tune.parameters.defaults,
+    #                              tune.num.trees = tune.num.trees,
+    #                              tune.num.reps = tune.num.reps,
+    #                              tune.num.draws = tune.num.draws,
+    #                              train = instrumental_train)
 
     args <- utils::modifyList(args, as.list(tuning.output[["params"]]))
   }
