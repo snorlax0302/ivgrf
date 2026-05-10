@@ -28,9 +28,6 @@ causal_iv_forest(
   ci.group.size = 2,
   reduced.form.weight = 0,
   tune.parameters = "none",
-  tune.num.trees = 200,
-  tune.num.reps = 50,
-  tune.num.draws = 1000,
   compute.oob.predictions = TRUE,
   num.threads = NULL,
   seed = runif(1, 0, .Machine$integer.max)
@@ -120,13 +117,6 @@ If "all": all tunable parameters are tuned by cross-validation. The following pa
 tunable: ("sample.fraction", "mtry", "min.node.size", "honesty.fraction",
  "honesty.prune.leaves", "alpha", "imbalance.penalty"). If honesty is FALSE the honesty.* parameters are not tuned.
 Default is "none" (no parameters are tuned).}
-
-\item{tune.num.trees}{The number of trees in each 'mini forest' used to fit the tuning model. Default is 200.}
-
-\item{tune.num.reps}{The number of forests used to fit the tuning model. Default is 50.}
-
-\item{tune.num.draws}{The number of random parameter values considered when using the model
-to select the optimal parameters. Default is 1000.}
 
 \item{compute.oob.predictions}{Whether OOB predictions on training set should be precomputed. Default is TRUE.}
 

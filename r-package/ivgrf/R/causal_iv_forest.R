@@ -68,10 +68,6 @@
 #'  tunable: ("sample.fraction", "mtry", "min.node.size", "honesty.fraction",
 #'   "honesty.prune.leaves", "alpha", "imbalance.penalty"). If honesty is FALSE the honesty.* parameters are not tuned.
 #'  Default is "none" (no parameters are tuned).
-#' @param tune.num.trees The number of trees in each 'mini forest' used to fit the tuning model. Default is 200.
-#' @param tune.num.reps The number of forests used to fit the tuning model. Default is 50.
-#' @param tune.num.draws The number of random parameter values considered when using the model
-#'                          to select the optimal parameters. Default is 1000.
 #' @param compute.oob.predictions Whether OOB predictions on training set should be precomputed. Default is TRUE.
 #' @param num.threads Number of threads used in training. By default, the number of threads is set
 #'                    to the maximum hardware concurrency.
@@ -123,9 +119,6 @@ causal_iv_forest <- function(X, Y, W, Z,
                                 ci.group.size = 2,
                                 reduced.form.weight = 0,
                                 tune.parameters = "none",
-                                tune.num.trees = 200,
-                                tune.num.reps = 50,
-                                tune.num.draws = 1000,
                                 compute.oob.predictions = TRUE,
                                 num.threads = NULL,
                                 seed = runif(1, 0, .Machine$integer.max)) {
@@ -141,16 +134,6 @@ causal_iv_forest <- function(X, Y, W, Z,
   if (!is.numeric(reduced.form.weight) | reduced.form.weight < 0 | reduced.form.weight > 1) {
     stop("Error: Invalid value for reduced.form.weight. Please give a value in [0,1].")
   }
-
-  all.tunable.params <- c("sample.fraction", "mtry", "min.node.size", "honesty.fraction",
-                          "honesty.prune.leaves", "alpha", "imbalance.penalty")
-  default.parameters <- list(sample.fraction = 0.5,
-                             mtry = min(ceiling(sqrt(ncol(X)) + 20), ncol(X)),
-                             min.node.size = 5,
-                             honesty.fraction = 0.5,
-                             honesty.prune.leaves = TRUE,
-                             alpha = 0.05,
-                             imbalance.penalty = 0)
 
   args.orthog = list(X = X,
                      num.trees = min(500, num.trees),
@@ -219,32 +202,6 @@ causal_iv_forest <- function(X, Y, W, Z,
               legacy.seed = get_legacy_seed(),
               verbose = get_verbose())
 
-  tuning.output <- NULL
-  if (!identical(tune.parameters, "none")) {
-    if (identical(tune.parameters, "all")) {
-      tune.parameters <- all.tunable.params
-    } else {
-      tune.parameters <- unique(match.arg(tune.parameters, all.tunable.params, several.ok = TRUE))
-    }
-    if (!honesty) {
-      tune.parameters <- tune.parameters[!grepl("honesty", tune.parameters)]
-    }
-    tune.parameters.defaults <- default.parameters[tune.parameters]
-    stop("Error: Tuning is currently disabled. Please set tune.parameters = 'none'.")
-    # tuning.output <- tune_forest(data = data,
-    #                              nrow.X = nrow(X),
-    #                              ncol.X = ncol(X),
-    #                              args = args,
-    #                              tune.parameters = tune.parameters,
-    #                              tune.parameters.defaults = tune.parameters.defaults,
-    #                              tune.num.trees = tune.num.trees,
-    #                              tune.num.reps = tune.num.reps,
-    #                              tune.num.draws = tune.num.draws,
-    #                              train = instrumental_train)
-
-    args <- utils::modifyList(args, as.list(tuning.output[["params"]]))
-  }
-
   forest <- do.call.rcpp(instrumental_train, c(data, args))
   class(forest) <- c("causal_iv_forest", "instrumental_forest", "grf")
   forest[["seed"]] <- seed
@@ -260,8 +217,6 @@ causal_iv_forest <- function(X, Y, W, Z,
   forest[["clusters"]] <- clusters
   forest[["equalize.cluster.weights"]] <- equalize.cluster.weights
   forest[["sample.weights"]] <- sample.weights
-  forest[["tunable.params"]] <- args[all.tunable.params]
-  forest[["tuning.output"]] <- tuning.output
   forest[["has.missing.values"]] <- has.missing.values
 
   forest
