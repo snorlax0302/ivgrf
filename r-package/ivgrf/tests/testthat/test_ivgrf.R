@@ -12,6 +12,9 @@ test_that("ivgrf works", {
   pp <- predict(fit)$predictions
   scores <- grf::get_scores(fit)
 
+  ate <- grf::average_treatment_effect(fit)
+  rate <- grf::rank_average_treatment_effect(fit, pp)
+
 
   expect_true(TRUE)
 })
