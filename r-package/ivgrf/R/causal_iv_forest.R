@@ -93,13 +93,13 @@
 #' W <- Q * Z
 #' tau <-  X[, 1] / 2
 #' Y <- rowSums(X[, 1:3]) + tau * W + Q + rnorm(n)
-#' iv.forest <- instrumental_forest(X, Y, W, Z)
+#' iv.forest <- causal_iv_forest(X, Y, W, Z)
 #'
 #' # Predict on out-of-bag training samples.
 #' iv.pred <- predict(iv.forest)
 #'
 #' # Estimate a (local) average treatment effect.
-#' average_treatment_effect(iv.forest)
+#' # average_treatment_effect(iv.forest)
 #' }
 #'
 #' @export
@@ -295,13 +295,13 @@ causal_iv_forest <- function(X, Y, W, Z,
 #' W <- Q * Z
 #' tau <-  X[, 1] / 2
 #' Y <- rowSums(X[, 1:3]) + tau * W + Q + rnorm(n)
-#' iv.forest <- instrumental_forest(X, Y, W, Z)
+#' iv.forest <- causal_iv_forest(X, Y, W, Z)
 #'
 #' # Predict on out-of-bag training samples.
 #' iv.pred <- predict(iv.forest)
 #'
 #' # Estimate a (local) average treatment effect.
-#' average_treatment_effect(iv.forest)
+#' #average_treatment_effect(iv.forest)
 #' }
 #'
 #' @method predict causal_iv_forest
